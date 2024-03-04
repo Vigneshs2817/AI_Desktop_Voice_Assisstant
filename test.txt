@@ -1,0 +1,107 @@
+import speech_recognition as sr
+import pyttsx3
+import pywhatkit
+import datetime
+import wikipedia
+import smtplib
+listener=sr.Recognizer()
+engine=pyttsx3.init()
+engine.say("jarvis activated")
+engine.say("waiting for your command")
+
+engine.runAndWait()
+def talk(text):
+    engine.say(text)
+    engine.runAndWait()
+talk("hello i am your assistant to guide this desktop ")
+talk("you have to tell the operation you need, when i ask at the end ")
+talk("now i am going to list out the operations which i could perform ")
+talk("say play a song with song name to play ")
+talk(" say email to send an email")
+talk("ask what is the time to know the current time")
+talk("ask who is or what is with the content name to find the result ")
+talk('waiting for your command')
+def get_input_from_user():
+    # Create a new instance of the recognizer class
+    r = sr.Recognizer()
+
+    # Use the default microphone as the audio source
+    with sr.Microphone() as source:
+        print("Speak now...")
+        # Adjust for ambient noise and listen for the user's input
+        r.adjust_for_ambient_noise(source)
+        audio = r.listen(source)
+
+    # Attempt to recognize the input using Google Speech Recognition
+    try:
+        input_text = r.recognize_google(audio)
+        print(f"You said: {input_text}")
+        return input_text
+
+    except:
+        return " " 
+        #sr.RequestError as e:
+        #print(f"Oops! There was a problem with the request: {e}")
+
+while True:
+    command=get_input_from_user()
+    talk("waiting for your command")
+
+   
+    print(command)
+    if "play" in command:
+        song=command.replace("play","")
+        talk("playing" + song)
+        pywhatkit.playonyt(song)
+    elif "time" in command:
+        time=datetime.datetime.now().strftime("%I %M:%p")
+        talk(time)
+    elif "who is" in command:
+        person=command.replace("who is","")
+        info=wikipedia.summary(person,2)
+        print(info)
+        talk(info)
+    elif 'email' in command:
+        talk('you have selected to send an email')
+        talk('please answer the following informations to proceed')
+        talk('tell your email id')
+        sender_email=command()
+        #sender_email=("sriharri.2111047@srec.ac.in")
+        sender_email=sender_email.replace(" ","")
+        sender_email=sender_email.replace("at","@")
+        print(sender_email)
+        talk(sender_email)
+        talk("tell your password to login your account")
+        sender_password=command()
+        #sender_password=("srec@123")
+        sender_password=sender_password.replace(" ","")
+        sender_password=sender_password.replace("at","@")
+        print(sender_password)
+        talk(sender_password)
+        talk('please say the email id to send the mail')
+        reciever_mail=command()
+        #reciever_mail=("akashravi517@gmail.com")
+        reciever_mail=reciever_mail.replace(" ","")
+        reciever_mail=reciever_mail.replace("at","@")
+        print(reciever_mail)
+        talk(reciever_mail)
+        talk('say the email content to be in the mail')
+        email_content=command('')
+        #email_content=('hi this is work')
+        #email_content=('hi this is ')
+        
+        print(email_content)
+        talk('now i am going to repeat the content which you have told')
+        talk(email_content)
+        server=smtplib.SMTP('smtp.gmail.com',587)
+        server.starttls()
+        server.login(sender_email,sender_password)
+        talk("please say yes to send the mail and no to cancel")
+        choice=command()
+        if "yes" in choice:
+            server.sendmail(sender_email,reciever_mail,email_content)
+            talk("the mail has been sent successfully")
+        else:
+            talk("as you said no or you did not answer the mail was cancelled")
+    #else 'break' in command
+        #break
