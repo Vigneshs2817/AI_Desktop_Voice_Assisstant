@@ -1,107 +1,168 @@
-import speech_recognition as sr
 import pyttsx3
-import pywhatkit
+import speech_recognition as sr
 import datetime
+import os
+import cv2
+import pywhatkit
+import requests
 import wikipedia
+import webbrowser
 import smtplib
-listener=sr.Recognizer()
-engine=pyttsx3.init()
-engine.say("jarvis activated")
-engine.say("waiting for your command")
+import sys
+from bs4 import BeautifulSoup
 
-engine.runAndWait()
-def talk(text):
-    engine.say(text)
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+print(voices[0].id)
+engine.setProperty('voices',voices[0].id)
+
+#txt to speech function
+def speak(audio):
+    engine.say(audio)
     engine.runAndWait()
-talk("hello i am your assistant to guide this desktop ")
-talk("you have to tell the operation you need, when i ask at the end ")
-talk("now i am going to list out the operations which i could perform ")
-talk("say play a song with song name to play ")
-talk(" say email to send an email")
-talk("ask what is the time to know the current time")
-talk("ask who is or what is with the content name to find the result ")
-talk('waiting for your command')
-def get_input_from_user():
-    # Create a new instance of the recognizer class
+
+#To convert or recognize the voices into command
+def takecommand():
     r = sr.Recognizer()
-
-    # Use the default microphone as the audio source
     with sr.Microphone() as source:
-        print("Speak now...")
-        # Adjust for ambient noise and listen for the user's input
-        r.adjust_for_ambient_noise(source)
-        audio = r.listen(source)
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source,timeout=None,phrase_time_limit=5)
 
-    # Attempt to recognize the input using Google Speech Recognition
     try:
-        input_text = r.recognize_google(audio)
-        print(f"You said: {input_text}")
-        return input_text
+        print("Recognizing...")
+        query = r.recognize_google(audio,language='en-in')
+        print(f"You said: {query}")
+    except Exception as e:
+        print("Say that again please...")
+        speak("Say that again please...")
+        return "none"
+    return query
 
-    except:
-        return " " 
-        #sr.RequestError as e:
-        #print(f"Oops! There was a problem with the request: {e}")
+def wish():
+    hour = int(datetime.datetime.now().hour)
+    
+    if hour>=0 and hour<=12:
+        print("Good Morning")
+        speak("Good Morning")
+    elif hour>12 and hour<18:
+        print("Good Afternoon")
+        speak("Good Afternoon")
+    else:
+        print("Good Evening")
+        speak("Good Evening")
+    print("I am Ava sir. Please tell me how can I help you")
+    speak("I am Ava sir. Please tell me how can I help you")
 
-while True:
-    command=get_input_from_user()
-    talk("waiting for your command")
+def sendEmail(to,content):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('arunachalam12074@gmail.com','gynq ezir cfgt hwuy')
+    server.sendmail('arunachalam12074@gmail.com',to,content)
+    server.quit()
 
-   
-    print(command)
-    if "play" in command:
-        song=command.replace("play","")
-        talk("playing" + song)
-        pywhatkit.playonyt(song)
-    elif "time" in command:
-        time=datetime.datetime.now().strftime("%I %M:%p")
-        talk(time)
-    elif "who is" in command:
-        person=command.replace("who is","")
-        info=wikipedia.summary(person,2)
-        print(info)
-        talk(info)
-    elif 'email' in command:
-        talk('you have selected to send an email')
-        talk('please answer the following informations to proceed')
-        talk('tell your email id')
-        sender_email=command()
-        #sender_email=("sriharri.2111047@srec.ac.in")
-        sender_email=sender_email.replace(" ","")
-        sender_email=sender_email.replace("at","@")
-        print(sender_email)
-        talk(sender_email)
-        talk("tell your password to login your account")
-        sender_password=command()
-        #sender_password=("srec@123")
-        sender_password=sender_password.replace(" ","")
-        sender_password=sender_password.replace("at","@")
-        print(sender_password)
-        talk(sender_password)
-        talk('please say the email id to send the mail')
-        reciever_mail=command()
-        #reciever_mail=("akashravi517@gmail.com")
-        reciever_mail=reciever_mail.replace(" ","")
-        reciever_mail=reciever_mail.replace("at","@")
-        print(reciever_mail)
-        talk(reciever_mail)
-        talk('say the email content to be in the mail')
-        email_content=command('')
-        #email_content=('hi this is work')
-        #email_content=('hi this is ')
+if __name__ == "__main__":
+    #speak("this is ronnie")
+    wish()
+    while True:
+        query = takecommand().lower()
+        #Tasks
+        if "open notepad" in query:
+            npath = "C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2306.15.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe"
+            os.startfile(npath)
+
+        elif "open adobe reader" in query:
+            apath = "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Adobe Reader XI.lnk"
+            os.startfile(apath)
+        elif "open command prompt" in query:
+            os.system("start cmd")
+
+        elif "open camera" in query:
+            cap = cv2.VideoCapture(0)
+            while True:
+                ret, img = cap.read()
+                cv2.imshow('webcam',img)
+                k = cv2.waitKey(50)
+                if k==27:
+                    break;
+            cap.release()
+            cv2.destroyAllWindows()
         
-        print(email_content)
-        talk('now i am going to repeat the content which you have told')
-        talk(email_content)
-        server=smtplib.SMTP('smtp.gmail.com',587)
-        server.starttls()
-        server.login(sender_email,sender_password)
-        talk("please say yes to send the mail and no to cancel")
-        choice=command()
-        if "yes" in choice:
-            server.sendmail(sender_email,reciever_mail,email_content)
-            talk("the mail has been sent successfully")
-        else:
-            talk("as you said no or you did not answer the mail was cancelled")
-    #else 'break' in command
-        #break
+        elif "play" in query:
+            song = query.replace("play","")
+            print(f"playing {song}")
+            speak("playing" + song)
+            pywhatkit.playonyt(song)
+    
+        elif "ip address" in query:
+            ip = requests.get('https://api.ipify.org').text
+            print(f"Your IP address is {ip}")
+            speak(f"Your IP address is {ip}")
+        
+        elif "wikipedia" in query:
+            speak("searching wikipedia...")
+            search = query.replace("wikipedia","")
+            info=wikipedia.summary(search,2)            
+            speak("according to wikipedia")
+            print(info)
+            speak(info)
+
+        elif "time" in query:
+            time=datetime.datetime.now().strftime("%I %M:%p")
+            print(time)
+            speak(f"Current time is {time}")
+
+        elif "date" in query:
+            date=datetime.datetime.now().strftime("%d %m %Y")
+            print(date)
+            speak(f"Today's date is, {date}")
+        
+        elif "open youtube" in query:
+            webbrowser.open_new_tab("www.youtube.com")
+
+        elif "open stack overflow" in query:
+            webbrowser.open_new_tab("www.stackoverflow.com")
+
+        elif "open google" in query:
+            print("sir, what should I search on google")
+            speak("sir, what should I search on google")
+            cmd = takecommand().lower()
+            webbrowser.open_new_tab(cmd)
+
+        elif "open email" in query:
+            webbrowser.open_new_tab("https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox")
+
+        elif "send email" in query:
+            try:
+                speak("what should I say?")
+                content = takecommand().lower()
+                to = "abucrush0@gmail.com"
+                sendEmail(to,content)
+                print(content)
+                speak(f"You said {content}")
+                print(f"Email has been sent to {to}")
+                speak(f"Email has been sent to {to}")
+            except Exception as e:
+                print(e)
+                print(f"Sorry sir, i am not able to sent this mail to {to}")
+                speak(f"Sorry sir, i am not able to sent this mail to {to}")
+            
+        elif "temperature" in query:
+            speak("In which city sir?")
+            city = takecommand().lower()
+            search = f"temperature in {city}"
+            url = f"https://www.google.com/search?q={search}"
+            r = requests.get(url)
+            data = BeautifulSoup(r.text,"html.parser")
+            temp = data.find("div",class_="BNeawe").text
+            print(f"current {search} is {temp}")
+            speak(f"current {search} is {temp}")
+
+        elif "no thanks" in query or "thank you" in query:
+            print("thanks for using me sir, have a great day")
+            speak("thanks for using me sir, have a great day")
+            sys.exit()
+        
+        speak("sir, do you like to ask some other questions?")
+
