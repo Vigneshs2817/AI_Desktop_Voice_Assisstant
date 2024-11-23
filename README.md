@@ -37,3 +37,12 @@ To install the required libraries, use the command:
 
 ```bash
 pip install pyttsx3 SpeechRecognition opencv-python pywhatkit requests wikipedia beautifulsoup4
+```
+##Interact with Ava using voice commands. For example:
+
+"Open Notepad"
+"What's the temperature in Chennai?"
+"Play Shape of You"
+"Send email"
+"What is Python in Wikipedia?"
+
